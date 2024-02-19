@@ -112,24 +112,24 @@ int main(int argc, char *argv[]) {
     int extra_ending_spaces = count_ending_spaces(buf + extra_starting_spaces);
 
     if (spaces + digits != BUF_SIZE - 1) {
-        printf("Invalid args: unexpected symbol");
+        printf("Invalid args: unexpected symbol\n");
         exit(1);
     }
 
     if (!(digits > 1 && digits < 21)) {  //MAX_INT has 10 digits
-        printf("Invalid args: unexpected number of digits");
+        printf("Invalid args: unexpected number of digits\n");
         exit(1);
     }
 
     if (spaces - extra_starting_spaces - extra_ending_spaces == 0) {
-        printf("Invalid args: add space between args ");
+        printf("Invalid number of args: two numbers expected, but less received\n");
         exit(1);
     }
 
     int numbers_counter = count_numbers(buf);
 
     if (numbers_counter != 2) {
-        printf("Invalid number of args: two numbers expected");
+        printf("Invalid number of args: two numbers expected, but more received\n");
         exit(1);
     }
 
@@ -143,5 +143,12 @@ int main(int argc, char *argv[]) {
 
     int first_num = atoi(first_num_s);
     int second_num = atoi(second_num_s + count_starting_spaces(second_num_s));
-    printf("%d", first_num + second_num);
+
+    int sum = first_num + second_num;
+    if (sum < 0) {
+        printf("Undefined behaviour while adding two numbers happened\n");
+        exit(1);
+    }
+    printf("%d", sum);
+    exit(0);
 }
