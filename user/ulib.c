@@ -64,6 +64,37 @@ strchr(const char *s, char c)
 }
 
 char*
+strtok(char *s, const char *delm)
+{
+    static char *saved = 0;
+    if (!s)
+        s = saved;
+    if (!s)
+        return 0;
+
+    char *beg = s;
+    while (*beg && strchr(delm, *beg))
+        ++beg;
+    if (!*beg) {
+        saved = 0;
+        return 0;
+    }
+
+    char *end = beg;
+    while (*end && !strchr(delm, *end))
+        ++end;
+
+    if (*end) {
+        *end = '\0';
+        saved = end + 1;
+    } else {
+        saved = 0;
+    }
+
+    return beg;
+}
+
+char*
 gets(char *buf, int max)
 {
   int i, cc;
