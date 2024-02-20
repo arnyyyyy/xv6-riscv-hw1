@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
 
     int sum = add(lhs, rhs);
     if (sum < 0) {
-        printf("Undefined behaviour while adding two numbers happened\n");
+        printf("Addition overflow\n");
         exit(1);
     }
     printf("%d\n", sum);
