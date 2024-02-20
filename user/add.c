@@ -69,6 +69,12 @@ int main(int argc, char *argv[]) {
     int lhs = atoi(lhs_s);
     int rhs = atoi(rhs_s);
 
-    printf("%d\n", lhs + rhs);
+    int sum = lhs + rhs;
+    if (sum < 0) {
+        printf("Addition overflow\n");
+        exit(1);
+    }
+
+    printf("%d\n", sum);
     exit(0);
 }
