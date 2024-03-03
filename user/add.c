@@ -2,6 +2,7 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 
+#define stderr 2
 #define NULL 0
 #define BUF_SIZE 64
 #define DELM " \n\r"
@@ -17,34 +18,34 @@ int all_digits(const char *s) {
 }
 
 int main(int argc, char *argv[]) {
-    char buf[BUF_SIZE];
+    char buf[BUF_SIZE] = {};
     gets(buf, BUF_SIZE);
 
-    if (strchr(buf, '\n') == NULL) {
-        printf("Invalid args: buffer overflow\n");
+    if (buf[BUF_SIZE - 2] != '\0') {
+        fprintf(stderr, "Buffer overflow\n");
         exit(1);
     }
 
     char *lhs_s = strtok(buf, DELM);
     char *rhs_s = strtok(NULL, DELM);
     if (lhs_s == NULL) {
-        printf("Invalid number of args: two numbers expected, but none received\n");
+        fprintf(stderr, "Invalid number of args: two numbers expected, but none received\n");
         exit(1);
     }
     if (rhs_s == NULL) {
-        printf("Invalid number of args: two numbers expected, but only one received\n");
+        fprintf(stderr, "Invalid number of args: two numbers expected, but only one received\n");
         exit(1);
     }
     if (strtok(NULL, DELM) != NULL) {
-        printf("Invalid number of args: two numbers expected, but more received\n");
+        fprintf(stderr, "Invalid number of args: two numbers expected, but more received\n");
         exit(1);
     }
     if (!all_digits(lhs_s)) {
-        printf("Invalid args: unexpected symbols in the first argument\n");
+        fprintf(stderr, "Invalid args: unexpected symbols in the first argument\n");
         exit(1);
     }
     if (!all_digits(rhs_s)) {
-        printf("Invalid args: unexpected symbols in the second argument\n");
+        fprintf(stderr, "Invalid args: unexpected symbols in the second argument\n");
         exit(1);
     }
 
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
 
     int sum = lhs + rhs;
     if (sum < 0) {
-        printf("Addition overflow\n");
+        fprintf(stderr, "Addition overflow\n");
         exit(1);
     }
 
