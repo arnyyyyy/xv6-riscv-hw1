@@ -113,7 +113,7 @@ failure_addition_overflow:
         la a1, msg_addition_overflow
         j failure
 
-# failure message is in a0
+# failure message is in a1
 failure:
         li a0, 2
         call fprintf
