@@ -1,7 +1,10 @@
+.equ BUF_SIZE, 64
+
 .data
 
+buf: .fill BUF_SIZE, 1, 0
 delm: .asciz " \r\n"
-msg_buffer_overflow: .asciz "Invalid args: buffer overflow\n"
+msg_buffer_overflow: .asciz "Buffer overflow\n"
 msg_zero_args: .asciz "Invalid number of args: two numbers expected, but none received\n"
 msg_one_arg: .asciz "Invalid number of args: two numbers expected, but only one received\n"
 msg_many_args: .asciz "Invalid number of args: two numbers expected, but more received\n"
@@ -13,37 +16,31 @@ msg_fmt: .asciz "%d\n"
 .text
 .global main
 
-.equ BUF_SIZE, 64
 
 main:
-        # Allocate the buffer on stack and store its address in s1
-        mv s1, sp
-        addi sp, sp, -BUF_SIZE
-
         # Read from stdin into the buffer
-        mv a0, s1
+        la a0, buf
         li a1, BUF_SIZE
         call gets
 
-        # Check for buffer overflow by searching for '\n'
-        mv a0, s1
-        li a1, '\n'
-        call strchr
-        beq a0, zero, failure_buffer_overflow
+        # Check for buffer overflow by checking the symbol before the last
+        la t0, buf
+        lb t0, [BUF_SIZE - 2](t0)
+        bne t0, zero, failure_buffer_overflow
 
-        # Find the first token and store it in s2
-        mv a0, s1
+        # Find the first token and store it in s1
+        la a0, buf
         la a1, delm
         call strtok
-        mv s2, a0
-        beq s2, zero, failure_zero_args
+        mv s1, a0
+        beq s1, zero, failure_zero_args
 
-        # Find the second token and store it in s3
+        # Find the second token and store it in s2
         li a0, 0
         la a1, delm
         call strtok
-        mv s3, a0
-        beq s3, zero, failure_one_arg
+        mv s2, a0
+        beq s2, zero, failure_one_arg
 
         # Check that there are no more tokens
         li a0, 0
@@ -52,35 +49,35 @@ main:
         bne a0, zero, failure_many_args
 
         # Check that the first token contains only digits
-        mv a0, s2
+        mv a0, s1
         jal ra, all_digits
         beq a0, zero, failure_lhs_invalid
 
         # Check that the second token contains only digits
-        mv a0, s3
+        mv a0, s2
         jal ra, all_digits
         beq a0, zero, failure_rhs_invalid
 
         # Parse the first token
+        # s1 now contains its value
+        mv a0, s1
+        call atoi
+        mv s1, a0
+
+        # Parse the second token
         # s2 now contains its value
         mv a0, s2
         call atoi
         mv s2, a0
 
-        # Parse the second token
-        # s3 now contains its value
-        mv a0, s3
-        call atoi
-        mv s3, a0
-
         # Add both operands and check for overflow
-        # s2 now contains their sum
-        add s2, s2, s3
-        blt s2, zero, failure_addition_overflow
+        # s1 now contains their sum
+        add s1, s1, s2
+        blt s1, zero, failure_addition_overflow
 
         # Print the sum
         la a0, msg_fmt
-        mv a1, s2
+        mv a1, s1
         call printf
 
         # Exit gracefully
