@@ -86,36 +86,38 @@ main:
         ecall
 
 failure_buffer_overflow:
-        la a0, msg_buffer_overflow
+        la a1, msg_buffer_overflow
         j failure
 
 failure_zero_args:
-        la a0, msg_zero_args
+        la a1, msg_zero_args
         j failure
 
 failure_one_arg:
-        la a0, msg_one_arg
+        la a1, msg_one_arg
         j failure
 
 failure_many_args:
-        la a0, msg_many_args
+        la a1, msg_many_args
         j failure
 
 failure_lhs_invalid:
-        la a0, msg_lhs_invalid
+        la a1, msg_lhs_invalid
         j failure
 
 failure_rhs_invalid:
-        la a0, msg_rhs_invalid
+        la a1, msg_rhs_invalid
         j failure
 
 failure_addition_overflow:
-        la a0, msg_addition_overflow
+        la a1, msg_addition_overflow
         j failure
 
 # failure message is in a0
 failure:
-        call printf
+        li a0, 2
+        call fprintf
+
         li a7, 2                  # Exit system call
         li a0, 1                  # Exit status (failure)
         ecall
