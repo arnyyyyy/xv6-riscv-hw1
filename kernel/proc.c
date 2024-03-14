@@ -4,6 +4,7 @@
 #include "riscv.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "procinfo.h"
 #include "defs.h"
 
 struct cpu cpus[NCPU];
@@ -680,4 +681,51 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+// `addr` is a user address space pointer to an array of `struct procinfo`
+// `lim` is the size of the array
+int
+ps_listinfo(uint64 addr, int lim)
+{
+  struct proc *p = myproc();
+
+  int i = 0;
+  struct proc *pp;
+  struct procinfo info;
+
+  for(pp = proc; pp < &proc[NPROC]; pp++){
+    acquire(&wait_lock);
+    acquire(&pp->lock);
+
+    if(pp->state == UNUSED) {
+      release(&pp->lock);
+      release(&wait_lock);
+      continue;
+    }
+
+    info.state = pp->state;
+    strncpy(info.name, pp->name, 16);
+    info.pid = pp->pid;
+
+    info.parent_pid = 0;
+    if(pp->parent){
+      acquire(&pp->parent->lock);
+      info.parent_pid = pp->parent->pid;
+      release(&pp->parent->lock);
+    }
+
+    release(&pp->lock);
+    release(&wait_lock);
+
+    if(addr != 0 && i < lim &&
+       copyout(p->pagetable, addr + i * sizeof(struct procinfo),
+               (char*)&info, sizeof(struct procinfo)) < 0){
+      return -1;
+    }
+
+    i++;
+  }
+
+  return i;
 }
