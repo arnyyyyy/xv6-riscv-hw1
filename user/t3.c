@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
         TRY(close(p[0]));
 
         char *argv[] = {"/wc", NULL};
-        exec("/wc", argv);
+        TRY(exec("/wc", argv));
 
         exit(0);
     } else { // parent
