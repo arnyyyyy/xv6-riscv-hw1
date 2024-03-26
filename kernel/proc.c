@@ -306,6 +306,9 @@ fork(void)
   for(i = 0; i < NOFILE; i++)
     if(p->ofile[i])
       np->ofile[i] = filedup(p->ofile[i]);
+  for(i = 0; i < NOMUTEX; i++)
+    if(p->mutex[i])
+      np->mutex[i] = mutexdup(p->mutex[i]);
   np->cwd = idup(p->cwd);
 
   safestrcpy(np->name, p->name, sizeof(p->name));
@@ -357,6 +360,13 @@ exit(int status)
       struct file *f = p->ofile[fd];
       fileclose(f);
       p->ofile[fd] = 0;
+    }
+  }
+  for(int md = 0; md < NOMUTEX; md++){
+    if(p->mutex[md]){
+      struct mutex *m = p->mutex[md];
+      mutexclose(m);
+      p->mutex[md] = 0;
     }
   }
 

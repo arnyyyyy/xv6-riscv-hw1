@@ -8,6 +8,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct mutex;
 
 // bio.c
 void            binit(void);
@@ -53,6 +54,14 @@ int             readi(struct inode*, int, uint64, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, int, uint64, uint, uint);
 void            itrunc(struct inode*);
+
+// mutex.c
+void            mutexinit(void);
+struct mutex*   mutexalloc(void);
+void            mutexclose(struct mutex*);
+struct mutex*   mutexdup(struct mutex*);
+void            mutexlock(struct mutex*);
+void            mutexunlock(struct mutex*);
 
 // ramdisk.c
 void            ramdiskinit(void);
