@@ -21,7 +21,6 @@
 #define SYS_mkdir   20
 #define SYS_close   21
 #define SYS_mcreate 22
-#define SYS_mdup    23
-#define SYS_mclose  24
-#define SYS_mlock   25
-#define SYS_munlock 26
+#define SYS_mclose  23
+#define SYS_mlock   24
+#define SYS_munlock 25
