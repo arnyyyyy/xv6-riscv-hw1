@@ -44,34 +44,43 @@ mutexalloc(void)
 void
 mutexclose(struct mutex *m)
 {
+  acquire(&mtable.lock);
   if(m->ref < 1)
     panic("mutexclose");
   m->ref--;
   if(holdingsleep(&m->lock))
     releasesleep(&m->lock);
+  release(&mtable.lock);
 }
 
 struct mutex*
 mutexdup(struct mutex *m)
 {
+  acquire(&mtable.lock);
   if(m->ref < 1)
     panic("mutexdup");
   m->ref++;
+  release(&mtable.lock);
   return m;
 }
 
 void
 mutexlock(struct mutex *m)
 {
+  acquire(&mtable.lock);
   if(m->ref < 1)
     panic("mutexlock");
+  release(&mtable.lock);
   acquiresleep(&m->lock);
 }
 
 void
 mutexunlock(struct mutex *m)
 {
+  acquire(&mtable.lock);
   if(m->ref < 1)
     panic("mutexunlock");
+  release(&mtable.lock);
   releasesleep(&m->lock);
 }
+
