@@ -31,6 +31,11 @@ exec(char *path, char **argv)
   pagetable_t pagetable = 0, oldpagetable;
   struct proc *p = myproc();
 
+  // p->lock must be held while accessing p->pid
+  acquire(&p->lock);
+  pr_msg("exec pid=%d path=%s", p->pid, path);
+  release(&p->lock);
+
   begin_op();
 
   if((ip = namei(path)) == 0){
