@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "logging.h"
 
 struct spinlock tickslock;
 uint ticks;
@@ -186,13 +187,19 @@ devintr()
     // irq indicates which device interrupted.
     int irq = plic_claim();
 
+    const char *dev_name = "unknown";
     if(irq == UART0_IRQ){
+      dev_name = "uart";
       uartintr();
     } else if(irq == VIRTIO0_IRQ){
+      dev_name = "virtio";
       virtio_disk_intr();
     } else if(irq){
       printf("unexpected interrupt irq=%d\n", irq);
     }
+
+    if(logging_enabled(LOG_INTERRUPT))
+      pr_msg("interrupt scause=%d dev=%s", scause, dev_name);
 
     // the PLIC allows each device to raise at most one
     // interrupt at a time; tell the PLIC the device is

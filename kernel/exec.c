@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "defs.h"
 #include "elf.h"
+#include "logging.h"
 
 static int loadseg(pde_t *, uint64, struct inode *, uint, uint);
 
@@ -33,7 +34,8 @@ exec(char *path, char **argv)
 
   // p->lock must be held while accessing p->pid
   acquire(&p->lock);
-  pr_msg("exec pid=%d path=%s", p->pid, path);
+  if(logging_enabled(LOG_EXEC))
+    pr_msg("exec pid=%d path=%s", p->pid, path);
   release(&p->lock);
 
   begin_op();

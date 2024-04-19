@@ -5,6 +5,7 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+#include "logging.h"
 
 struct cpu cpus[NCPU];
 
@@ -434,6 +435,50 @@ wait(uint64 addr)
   }
 }
 
+static void
+log_switch(struct proc *p)
+{
+  if(!logging_enabled(LOG_SWITCH))
+    return;
+
+  pr_msg("switch to %d %s:\n"
+         "\n"
+         "trapframe:\n"
+         "kernel_satp: %p   kernel_sp: %p\n"
+         "kernel_trap: %p   epc: %p\n"
+         "kernel_hartid: %p\n"
+         "ra: %p   sp:  %p   gp:  %p   tp: %p\n"
+         "t0: %p   t1:  %p   t2:  %p   s0: %p\n"
+         "s1: %p   a0:  %p   a1:  %p   a2: %p\n"
+         "a3: %p   a4:  %p   a5:  %p   a6: %p\n"
+         "a7: %p   s2:  %p   s3:  %p   s4: %p\n"
+         "s5: %p   s6:  %p   s7:  %p   s8: %p\n"
+         "s9: %p   s10: %p   s11: %p   t3: %p\n"
+         "t4: %p   t5:  %p   t6:  %p\n"
+         "\n"
+         "context:\n"
+         "ra:  %p   sp:  %p   s0: %p   s1: %p\n"
+         "s2:  %p   s3:  %p   s4: %p   s5: %p\n"
+         "s6:  %p   s7:  %p   s8: %p   s9: %p\n"
+         "s10: %p   s11: %p\n",
+         p->pid, p->name,
+         p->trapframe->kernel_satp, p->trapframe->kernel_sp,
+         p->trapframe->kernel_trap, p->trapframe->epc,
+         p->trapframe->kernel_hartid,
+         p->trapframe->ra, p->trapframe->sp,  p->trapframe->gp,  p->trapframe->tp,
+         p->trapframe->t0, p->trapframe->t1,  p->trapframe->t2,  p->trapframe->s0,
+         p->trapframe->s1, p->trapframe->a0,  p->trapframe->a1,  p->trapframe->a2,
+         p->trapframe->a3, p->trapframe->a4,  p->trapframe->a5,  p->trapframe->a6,
+         p->trapframe->a7, p->trapframe->s2,  p->trapframe->s3,  p->trapframe->s4,
+         p->trapframe->s5, p->trapframe->s6,  p->trapframe->s7,  p->trapframe->s8,
+         p->trapframe->s9, p->trapframe->s10, p->trapframe->s11, p->trapframe->t3,
+         p->trapframe->t4, p->trapframe->t5,  p->trapframe->t6,
+         p->context.ra,  p->context.sp,  p->context.s0, p->context.s1,
+         p->context.s2,  p->context.s3,  p->context.s4, p->context.s5,
+         p->context.s6,  p->context.s7,  p->context.s8, p->context.s9,
+         p->context.s10, p->context.s11);
+}
+
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
@@ -455,6 +500,8 @@ scheduler(void)
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
       if(p->state == RUNNABLE) {
+        log_switch(p);
+
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
         // before jumping back to us.

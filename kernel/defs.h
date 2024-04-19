@@ -190,5 +190,11 @@ void            dinit(void);
 int             dmesg(uint64 addr);
 void            pr_msg(const char *fmt, ...);
 
+// logging.c
+void            logging_init(void);
+int             logging_enable(int class);
+int             logging_disable(int class);
+int             logging_enabled(int class);
+
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

@@ -82,11 +82,11 @@ pr_msg(const char *fmt, ...)
 
   acquire(&dbuf.lock);
 
-  acquire(&tickslock);
+  // acquire(&tickslock);
   dputc('[');
   pr_int(ticks, 10, 1);
   dputc(']');
-  release(&tickslock);
+  // release(&tickslock);
 
   dputc(' ');
 
