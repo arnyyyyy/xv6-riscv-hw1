@@ -648,15 +648,23 @@ skipelem(char *path, char *name)
 // If parent != 0, return the inode for the parent and copy the final
 // path element into name, which must have room for DIRSIZ bytes.
 // Must be called inside a transaction since it calls iput().
+//
+// If the path is absolute, start traversing from the root.
+// If the path is relative and dp != 0, start traversing from dp.
+// Otherwise, start traversing from cwd.
+// If dp != 0, dp must be valid but unlocked.
+// Does not take ownership over dp.
 static struct inode*
-namex(char *path, int nameiparent, char *name)
+namex(char *path, int nameiparent, char *name, struct inode *dp)
 {
   struct inode *ip, *next;
 
   if(*path == '/')
     ip = iget(ROOTDEV, ROOTINO);
-  else
+  else if(dp == 0)
     ip = idup(myproc()->cwd);
+  else
+    ip = idup(dp);
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
@@ -687,11 +695,24 @@ struct inode*
 namei(char *path)
 {
   char name[DIRSIZ];
-  return namex(path, 0, name);
+  return namex(path, 0, name, 0);
+}
+
+struct inode*
+nameifrom(char *path, struct inode *dp)
+{
+  char name[DIRSIZ];
+  return namex(path, 0, name, dp);
 }
 
 struct inode*
 nameiparent(char *path, char *name)
 {
-  return namex(path, 1, name);
+  return namex(path, 1, name, 0);
+}
+
+struct inode*
+nameiparentfrom(char *path, char *name, struct inode *dp)
+{
+  return namex(path, 1, name, dp);
 }
